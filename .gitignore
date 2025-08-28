@@ -1,5 +1,14 @@
+# Node.js
 node_modules
 dist
-.apibara
-.env
 .DS_Store
+
+# Apibara build artifacts
+.apibara
+
+# Environment variables
+.env
+.env.*
+
+# Logs
+*.log

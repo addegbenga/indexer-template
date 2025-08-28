@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "prepare": "apibara prepare",
-    "dev:dapp": "apibara dev --indexers medialano-dapp --preset=sepolia",
-    "dev:mipp": "apibara dev --indexers medialano-mipp --preset=sepolia",
-    "api:dev": "ts-node-dev src/server.ts",
+    "dev:dapp": "dotenv -e .env.dapp -- apibara dev --indexers medialano-dapp --preset=sepolia",
+    "dev:mipp": "dotenv -e .env.mipp -- apibara dev --indexers medialano-mipp --preset=sepolia",
+    "api:dev": "dotenv -e .env ts-node-dev src/server.ts",
     "build:indexer": "apibara build",
     "build:api": "tsc --project tsconfig.api.json",
     "build:deployment": "tsc --project tsconfig.deployment.json",
@@ -19,6 +19,7 @@
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:migrate": "drizzle-kit migrate",
     "drizzle:push": "drizzle-kit push",
+    "drizzle:studio": "drizzle-kit studio --port=3002",
     "typecheck": "tsc --noEmit",
     "typecheck:api": "tsc --project tsconfig.api.json --noEmit"
   },
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@types/node": "^20.5.2",
     "@types/pg": "^8.11.10",
+    "dotenv-cli": "^10.0.0",
     "typescript": "^5.6.2"
   }
 }
