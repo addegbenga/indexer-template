@@ -25,9 +25,9 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
       ],
     },
 
-    plugins: [
-      drizzleStorage({ db, migrate: { migrationsFolder: "./drizzle" } }),
-    ],
+    // plugins: [
+    //   drizzleStorage({ db, migrate: { migrationsFolder: "./drizzle" } }),
+    // ],
 
     async transform({ block, endCursor, finality }) {
       const { events } = block;
@@ -49,7 +49,7 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
         const isFromFactory = eventAddress === factoryAddress;
         const eventSource = isFromFactory ? "factory" : "deployed_collection";
 
-        logger.info("🔍 Transform processing event", {
+        logger.info("🔍 Transform processing events", {
           source: eventSource,
           address: event.address,
           selector,
@@ -57,204 +57,204 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
           blockNumber: block.header.blockNumber,
         });
 
-        switch (selector) {
-          case getSelector("CollectionCreated"): {
-            const collectionId = BigInt(data[0]).toString();
-            const creator = feltToAddress(data[2]);
-            const metadataUri = feltsToString([data[10], data[11], data[12]]);
+        // switch (selector) {
+        //   case getSelector("CollectionCreated"): {
+        //     const collectionId = BigInt(data[0]).toString();
+        //     const creator = feltToAddress(data[2]);
+        //     const metadataUri = feltsToString([data[10], data[11], data[12]]);
 
-            await db
-              .insert(schema.collections)
-              // @ts-ignore
-              .values({
-                id: collectionId,
-                creator,
-                metadataUri,
-                createdAtBlock: endCursor?.orderKey,
-              })
-              .onConflictDoUpdate({
-                target: schema.collections.id,
-                set: {
-                  creator,
-                  metadataUri,
-                  createdAtBlock: endCursor?.orderKey as any,
-                },
-              });
+        //     await db
+        //       .insert(schema.collections)
+        //       // @ts-ignore
+        //       .values({
+        //         id: collectionId,
+        //         creator,
+        //         metadataUri,
+        //         createdAtBlock: endCursor?.orderKey,
+        //       })
+        //       .onConflictDoUpdate({
+        //         target: schema.collections.id,
+        //         set: {
+        //           creator,
+        //           metadataUri,
+        //           createdAtBlock: endCursor?.orderKey as any,
+        //         },
+        //       });
 
-            break;
-          }
+        //     break;
+        //   }
 
-          case getSelector("CollectionUpdated"): {
-            const collectionId = BigInt(data[0]).toString();
-            const creator = feltToAddress(data[1]);
-            const metadataUri = feltsToString([data[4]]); // assuming single felt string
+        //   case getSelector("CollectionUpdated"): {
+        //     const collectionId = BigInt(data[0]).toString();
+        //     const creator = feltToAddress(data[1]);
+        //     const metadataUri = feltsToString([data[4]]); // assuming single felt string
 
-            await db
-              .insert(schema.collections)
-              // @ts-ignore
-              .values({
-                id: collectionId,
-                creator,
-                metadataUri,
-                createdAtBlock: endCursor?.orderKey,
-              })
-              .onConflictDoUpdate({
-                target: schema.collections.id,
-                set: {
-                  creator,
-                  metadataUri,
-                  createdAtBlock: endCursor?.orderKey as any,
-                },
-              });
+        //     await db
+        //       .insert(schema.collections)
+        //       // @ts-ignore
+        //       .values({
+        //         id: collectionId,
+        //         creator,
+        //         metadataUri,
+        //         createdAtBlock: endCursor?.orderKey,
+        //       })
+        //       .onConflictDoUpdate({
+        //         target: schema.collections.id,
+        //         set: {
+        //           creator,
+        //           metadataUri,
+        //           createdAtBlock: endCursor?.orderKey as any,
+        //         },
+        //       });
 
-            break;
-          }
+        //     break;
+        //   }
 
-          case getSelector("TokenMinted"): {
-            const collectionId = BigInt(data[0]).toString();
-            const metadataUri = feltsToString(data.slice(6, 9)); // decode ipfs://
-            const tokenId = BigInt(data[2]).toString();
-            const owner = feltToAddress(data[4]);
+        //   case getSelector("TokenMinted"): {
+        //     const collectionId = BigInt(data[0]).toString();
+        //     const metadataUri = feltsToString(data.slice(6, 9)); // decode ipfs://
+        //     const tokenId = BigInt(data[2]).toString();
+        //     const owner = feltToAddress(data[4]);
 
-            // Ensure collection exists (insert stub if missing)
-            const collection = await db.query.collections.findFirst({
-              where: eq(schema.collections.id, collectionId),
-            });
+        //     // Ensure collection exists (insert stub if missing)
+        //     const collection = await db.query.collections.findFirst({
+        //       where: eq(schema.collections.id, collectionId),
+        //     });
 
-            if (!collection) {
-              await db
-                .insert(schema.collections)
-                // @ts-ignore
-                .values({
-                  id: collectionId,
-                  creator: feltToAddress(data[4]),
-                  metadataUri: null,
-                  createdAtBlock: endCursor?.orderKey,
-                })
-                .onConflictDoNothing();
-            }
+        //     if (!collection) {
+        //       await db
+        //         .insert(schema.collections)
+        //         // @ts-ignore
+        //         .values({
+        //           id: collectionId,
+        //           creator: feltToAddress(data[4]),
+        //           metadataUri: null,
+        //           createdAtBlock: endCursor?.orderKey,
+        //         })
+        //         .onConflictDoNothing();
+        //     }
 
-            // Upsert asset (insert or update if duplicate)
-            await db
-              .insert(schema.assets)
-              // @ts-ignore
-              .values({
-                id: tokenId,
-                collectionId,
-                owner,
-                tokenUri: metadataUri,
-                mintedAtBlock: endCursor?.orderKey,
-              })
-              .onConflictDoUpdate({
-                target: schema.assets.id,
-                set: {
-                  owner,
-                  tokenUri: metadataUri,
-                  mintedAtBlock: endCursor?.orderKey as any,
-                },
-              });
+        //     // Upsert asset (insert or update if duplicate)
+        //     await db
+        //       .insert(schema.assets)
+        //       // @ts-ignore
+        //       .values({
+        //         id: tokenId,
+        //         collectionId,
+        //         owner,
+        //         tokenUri: metadataUri,
+        //         mintedAtBlock: endCursor?.orderKey,
+        //       })
+        //       .onConflictDoUpdate({
+        //         target: schema.assets.id,
+        //         set: {
+        //           owner,
+        //           tokenUri: metadataUri,
+        //           mintedAtBlock: endCursor?.orderKey as any,
+        //         },
+        //       });
 
-            break;
-          }
+        //     break;
+        //   }
 
-          case getSelector("TokenMintedBatch"): {
-            const collectionId = BigInt(data[0]).toString();
-            //@ts-ignore
-            const tokenIds = data[1] as string[]; // array of felt
-            //@ts-ignore
-            const owners = data[2] as string[]; // array of felt
+        //   case getSelector("TokenMintedBatch"): {
+        //     const collectionId = BigInt(data[0]).toString();
+        //     //@ts-ignore
+        //     const tokenIds = data[1] as string[]; // array of felt
+        //     //@ts-ignore
+        //     const owners = data[2] as string[]; // array of felt
 
-            // Ensure collection exists (insert stub if missing)
-            const collection = await db.query.collections.findFirst({
-              where: eq(schema.collections.id, collectionId),
-            });
+        //     // Ensure collection exists (insert stub if missing)
+        //     const collection = await db.query.collections.findFirst({
+        //       where: eq(schema.collections.id, collectionId),
+        //     });
 
-            if (!collection) {
-              await db
-                .insert(schema.collections)
-                // @ts-ignore
-                .values({
-                  id: collectionId,
-                  creator: "0x0",
-                  metadataUri: null,
-                  createdAtBlock: endCursor?.orderKey,
-                })
-                .onConflictDoNothing();
-            }
+        //     if (!collection) {
+        //       await db
+        //         .insert(schema.collections)
+        //         // @ts-ignore
+        //         .values({
+        //           id: collectionId,
+        //           creator: "0x0",
+        //           metadataUri: null,
+        //           createdAtBlock: endCursor?.orderKey,
+        //         })
+        //         .onConflictDoNothing();
+        //     }
 
-            // Upsert multiple tokens
-            for (let i = 0; i < tokenIds.length; i++) {
-              const tokenId = BigInt(tokenIds[i]).toString();
-              const owner = feltToAddress(owners[i]);
+        //     // Upsert multiple tokens
+        //     for (let i = 0; i < tokenIds.length; i++) {
+        //       const tokenId = BigInt(tokenIds[i]).toString();
+        //       const owner = feltToAddress(owners[i]);
 
-              await db
-                .insert(schema.assets)
-                // @ts-ignore
-                .values({
-                  id: tokenId,
-                  collectionId,
-                  owner,
-                  tokenUri: null, // batch mint often has no URIs
-                  mintedAtBlock: endCursor?.orderKey,
-                })
-                .onConflictDoUpdate({
-                  target: schema.assets.id,
-                  set: {
-                    owner,
-                    mintedAtBlock: endCursor?.orderKey as any,
-                  },
-                });
-            }
+        //       await db
+        //         .insert(schema.assets)
+        //         // @ts-ignore
+        //         .values({
+        //           id: tokenId,
+        //           collectionId,
+        //           owner,
+        //           tokenUri: null, // batch mint often has no URIs
+        //           mintedAtBlock: endCursor?.orderKey,
+        //         })
+        //         .onConflictDoUpdate({
+        //           target: schema.assets.id,
+        //           set: {
+        //             owner,
+        //             mintedAtBlock: endCursor?.orderKey as any,
+        //           },
+        //         });
+        //     }
 
-            break;
-          }
+        //     break;
+        //   }
 
-          case getSelector("TokenBurned"): {
-            const tokenId = BigInt(data[1]).toString();
+        //   case getSelector("TokenBurned"): {
+        //     const tokenId = BigInt(data[1]).toString();
 
-            await db.delete(schema.assets).where(eq(schema.assets.id, tokenId));
+        //     await db.delete(schema.assets).where(eq(schema.assets.id, tokenId));
 
-            break;
-          }
+        //     break;
+        //   }
 
-          case getSelector("Transfer"): {
-            const from = feltToAddress(data[0]);
-            const to = feltToAddress(data[1]);
-            const tokenId = BigInt(data[2]).toString();
+        //   case getSelector("Transfer"): {
+        //     const from = feltToAddress(data[0]);
+        //     const to = feltToAddress(data[1]);
+        //     const tokenId = BigInt(data[2]).toString();
 
-            await db
-              .update(schema.assets)
-              .set({ owner: to })
-              .where(eq(schema.assets.id, tokenId));
+        //     await db
+        //       .update(schema.assets)
+        //       .set({ owner: to })
+        //       .where(eq(schema.assets.id, tokenId));
 
-            const transferId = `${block.header.blockNumber}_${event.transactionHash}_${event.eventIndex}`;
-            await db
-              .insert(schema.transfers)
-              // @ts-ignore
-              .values({
-                id: transferId,
-                tokenId,
-                from,
-                to,
-                block: block.header.blockNumber,
-              })
-              .onConflictDoNothing(); // so reindexing doesn't duplicate
+        //     const transferId = `${block.header.blockNumber}_${event.transactionHash}_${event.eventIndex}`;
+        //     await db
+        //       .insert(schema.transfers)
+        //       // @ts-ignore
+        //       .values({
+        //         id: transferId,
+        //         tokenId,
+        //         from,
+        //         to,
+        //         block: block.header.blockNumber,
+        //       })
+        //       .onConflictDoNothing(); // so reindexing doesn't duplicate
 
-            break;
-          }
+        //     break;
+        //   }
 
-          default: {
-            logger.info("❓ Unknown event in transform", {
-              selector,
-              source: eventSource,
-              address: event.address,
-              keys: event.keys,
-              data,
-              blockNumber: block.header.blockNumber,
-            });
-            break;
-          }
-        }
+        //   default: {
+        //     logger.info("❓ Unknown event in transform", {
+        //       selector,
+        //       source: eventSource,
+        //       address: event.address,
+        //       keys: event.keys,
+        //       data,
+        //       blockNumber: block.header.blockNumber,
+        //     });
+        //     break;
+        //   }
+        // }
       }
     },
   });

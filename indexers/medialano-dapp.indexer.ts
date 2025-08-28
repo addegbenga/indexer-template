@@ -13,6 +13,7 @@ import { INDEXER_SOURCES } from "../lib/schema";
 export default function (runtimeConfig: ApibaraRuntimeConfig) {
   const { streamUrl, startingBlock, contractAddress} = runtimeConfig["dappIndexer"];
 
+  console.log(streamUrl,startingBlock, contractAddress,"whip")
   // Indexer Source
   const indexerSource = INDEXER_SOURCES["MEDIALANO-DAPP"]
 

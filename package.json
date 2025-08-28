@@ -10,17 +10,15 @@
     "api:dev": "ts-node-dev src/server.ts",
     "build:indexer": "apibara build",
     "build:api": "tsc --project tsconfig.api.json",
-    "build": "pnpm run build:indexer && pnpm run build:api",
-
-    "start:indexer:dapp": "pnpm run build:indexer && apibara start --indexer medialano-dapp --preset",
-    "start:indexer:mipp": "pnpm run build:indexer && apibara start --indexer medialano-mipp --preset",
-
+    "build:deployment": "tsc --project tsconfig.deployment.json",
+    "start:indexer:dapp": "apibara start --indexer medialano-dapp --preset",
+    "start:indexer:mipp": "apibara start --indexer medialano-mipp --preset",
+    "start:indexer:dapp:web": "node dist/deployment/deployment-service.js dapp",
+    "start:indexer:mipp:web": "node dist/depoyment/deployment-service.js mipp",
     "start:api:deploy": "pnpm run drizzle:generate && pnpm run drizzle:push && pnpm run build:api && node dist/api/server.js",
-
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:migrate": "drizzle-kit migrate",
     "drizzle:push": "drizzle-kit push",
-    
     "typecheck": "tsc --noEmit",
     "typecheck:api": "tsc --project tsconfig.api.json --noEmit"
   },
@@ -32,6 +30,7 @@
     "apibara": "next",
     "drizzle-kit": "^0.29.0",
     "drizzle-orm": "^0.40.1",
+    "fastify": "^5.5.0",
     "pg": "^8.13.1",
     "starknet": "^7.6.4"
   },
