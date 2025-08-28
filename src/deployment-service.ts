@@ -4,9 +4,6 @@ import { spawn, ChildProcess } from 'child_process';
 const fastify = Fastify({
   logger: {
     level: 'info',
-    transport: {
-      target: 'pino-pretty'
-    }
   }
 });
 
